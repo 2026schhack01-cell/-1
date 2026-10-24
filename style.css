@@ -1,0 +1,178 @@
+/* Mobile App First Stylings for Studium */
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
+
+:root {
+  --primary: #4f46e5;
+  --primary-light: #6366f1;
+  --primary-dark: #4338ca;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: #0f172a; /* Slate 900 for mobile mockup background */
+}
+
+/* Mobile Frame Container Styling */
+.mobile-device {
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile Bottom Navigation Button */
+.mobile-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4rem;
+}
+
+.mobile-tab-btn:active {
+  transform: scale(0.92);
+}
+
+.mobile-tab-btn.active {
+  color: #4f46e5;
+  font-weight: 800;
+}
+
+.mobile-tab-btn.active i {
+  color: #4f46e5;
+  transform: translateY(-1px);
+}
+
+/* Quick Suggestion Chips */
+.quick-chip {
+  white-space: nowrap;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* University Filter Buttons */
+.univ-filter-btn {
+  padding: 0.45rem 0.25rem;
+  border-radius: 0.65rem;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+.univ-filter-btn.active {
+  background-color: #ffffff;
+  color: #1e293b;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.univ-major-chip {
+  white-space: nowrap;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.68rem;
+  transition: all 0.15s ease;
+}
+.univ-major-chip.active {
+  background-color: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+  font-weight: 800;
+}
+  color: #475569;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.quick-chip:active {
+  background-color: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+  transform: scale(0.95);
+}
+
+/* Tab Animation */
+.tab-pane {
+  animation: mobileSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes mobileSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar Hide */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Timer Glow Animation */
+@keyframes studyPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(79, 70, 229, 0);
+  }
+}
+
+.studying-card-glow {
+  animation: studyPulseGlow 2s infinite;
+  border-color: #6366f1 !important;
+}
+
+/* Chat bubble styling for mobile */
+.chat-bubble-bot {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #1e293b;
+  border-radius: 1.25rem;
+  border-top-left-radius: 0.25rem;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.chat-bubble-user {
+  background-color: #4f46e5;
+  color: #ffffff;
+  border-radius: 1.25rem;
+  border-top-right-radius: 0.25rem;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3);
+}
