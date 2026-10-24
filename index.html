@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>스튜디움 (Studium) - 학생 맞춤형 AI 학습 플래너 & 순공 타이머</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-900 text-slate-800 antialiased min-h-screen flex items-center justify-center p-0 sm:p-4 font-['Pretendard',sans-serif]">
+
+  <!-- Mobile Device Mockup / Mobile App Wrapper -->
+  <div class="mobile-device w-full sm:max-w-[430px] h-[100dvh] sm:h-[890px] bg-slate-50 sm:rounded-[44px] shadow-2xl flex flex-col overflow-hidden relative border-0 sm:border-[8px] sm:border-slate-800">
+
+    <!-- Mobile Top Notch & Status Bar -->
+    <div class="bg-white shrink-0 pt-2 px-6 pb-2 border-b border-slate-100 flex items-center justify-between z-30 select-none">
+      <span id="mobileClock" class="text-xs font-bold font-mono text-slate-800">12:30</span>
+      <!-- Dynamic Island / Speaker Pill -->
+      <div class="w-20 h-4 bg-slate-900 rounded-full mx-auto hidden sm:block"></div>
+      <div class="flex items-center gap-1.5 text-slate-700">
+        <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+        <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+        <i data-lucide="battery-charging" class="w-4 h-4 text-emerald-600"></i>
+      </div>
+    </div>
+
+    <!-- App Header -->
+    <header class="bg-white/95 backdrop-blur-md px-4 py-3 border-b border-slate-100 shrink-0 z-20 flex items-center justify-between">
+      <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchTab('planner')">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-black text-base text-slate-900 tracking-tight">Studium</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200 font-bold">AI 플래너</span>
+          </div>
+          <p id="headerStudentName" class="text-[11px] text-slate-400 font-medium">민수 학생 · 목표 달성 중</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Live Total Pure Study Pill -->
+        <div class="flex items-center gap-1 px-2.5 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-[11px] font-bold">
+          <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-500 animate-pulse"></i>
+          <span id="headerTotalPureStudy" class="font-mono text-xs font-black">00:00:00</span>
+        </div>
+
+        <!-- Profile Settings Trigger -->
+        <button onclick="openProfileModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-indigo-50 flex items-center justify-center text-slate-600 hover:text-indigo-600 transition">
+          <i data-lucide="user" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mobile Scrollable Content Area -->
+    <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 no-scrollbar pb-24">
+
+      <!-- ================= 1. 플래너 탭 ================= -->
+      <section id="tab-planner" class="tab-pane space-y-4">
+        
+        <!-- Today Goal & Progress Card -->
+        <div class="bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 rounded-3xl p-5 text-white shadow-lg shadow-indigo-200 relative overflow-hidden">
+          <div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+          
+          <div class="flex items-center justify-between mb-3">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-bold backdrop-blur-md">
+              <i data-lucide="sparkles" class="w-3 h-3 text-yellow-300"></i>
+              <span>AI 성적 맞춤 스케줄</span>
+            </span>
+            <span id="plannerDateBadge" class="text-xs text-indigo-200 font-medium">오늘</span>
+          </div>
+
+          <h2 id="plannerGreeting" class="text-lg font-black tracking-tight leading-snug">
+            민수 학생의 오늘의 맞춤 플랜
+          </h2>
+          <p id="plannerAiAdvice" class="text-xs text-indigo-100 mt-1 leading-relaxed opacity-90 line-clamp-2">
+            취약 과목을 집중 보완하고 성취 목표를 달성할 수 있도록 과목별 순공 시간을 스마트하게 배정했습니다.
+          </p>
+
+          <!-- Overall Progress -->
+          <div class="mt-4 pt-3.5 border-t border-white/15">
+            <div class="flex justify-between items-center text-[11px] text-indigo-100 mb-1.5 font-medium">
+              <span>오늘의 순공 달성률</span>
+              <span id="overallProgressText" class="font-bold text-white font-mono">0% (0분 / 목표 0분)</span>
+            </div>
+            <div class="w-full h-2.5 bg-black/25 rounded-full overflow-hidden p-0.5">
+              <div id="overallProgressBar" class="h-full bg-gradient-to-r from-emerald-400 to-teal-300 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="grid grid-cols-2 gap-2 mt-4 pt-2">
+            <button onclick="regenerateAiPlan()" class="py-2 px-3 bg-white text-indigo-700 rounded-xl font-bold text-xs shadow hover:bg-indigo-50 transition flex items-center justify-center gap-1.5">
+              <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+              <span>AI 플랜 다시짜기</span>
+            </button>
+            <button onclick="openAddSubjectModal()" class="py-2 px-3 bg-indigo-500/40 text-white rounded-xl font-bold text-xs hover:bg-indigo-500/60 transition flex items-center justify-center gap-1.5 border border-white/20">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>과목 직접 추가</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Planner Section Header -->
+        <div class="flex items-center justify-between pt-1 px-1">
+          <h3 class="text-sm font-black text-slate-900 flex items-center gap-1.5">
+            <i data-lucide="calendar-check" class="w-4 h-4 text-indigo-600"></i>
+            <span>오늘의 과목별 플랜</span>
+          </h3>
+          <span class="text-[11px] text-slate-400">카드를 눌러 공부 시작</span>
+        </div>
+
+        <!-- Planner Cards (Vertical Stack on Mobile) -->
+        <div id="plannerCardsContainer" class="space-y-3">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- AI Dynamic Coach Mini Tip -->
+        <div class="p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-start gap-2.5 text-xs text-slate-600">
+          <div class="p-1.5 bg-indigo-100 rounded-lg text-indigo-700 shrink-0 mt-0.5">
+            <i data-lucide="lightbulb" class="w-4 h-4"></i>
+          </div>
+          <div class="leading-relaxed">
+            <p class="font-bold text-indigo-900 text-[11px]">AI 멘토의 공부 팁</p>
+            <p id="aiDynamicCoachTip" class="text-[11px] text-slate-600 mt-0.5">수학 킬러 문항은 집중력이 가장 높은 오전에, 암기 과목은 취침 전 40분을 활용해보세요!</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. 순공 타이머 탭 ================= -->
+      <section id="tab-timer" class="tab-pane hidden space-y-4">
+        <div class="bg-white rounded-3xl border border-slate-200/80 p-5 shadow-sm text-center">
+
+          <!-- Subject Picker Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div id="currentSubjectColorBadge" class="w-3.5 h-8 rounded-full bg-indigo-500"></div>
+              <div class="text-left">
+                <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-wider block">집중 과목</span>
+                <select id="timerSubjectSelect" onchange="onTimerSubjectChange(this.value)" class="text-lg font-black text-slate-900 bg-transparent border-none outline-none focus:ring-0 cursor-pointer pr-3">
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Timer Badge -->
+            <div class="flex items-center gap-1 px-2.5 py-1 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 text-xs font-bold">
+              <i data-lucide="timer" class="w-3.5 h-3.5"></i>
+              <span>순공 타이머</span>
+            </div>
+          </div>
+
+          <!-- Circular Mobile Timer -->
+          <div class="py-6 flex flex-col items-center justify-center">
+            <div class="relative w-56 h-56 flex items-center justify-center">
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="44" stroke="#f1f5f9" stroke-width="6.5" fill="transparent" />
+                <circle id="timerProgressCircle" cx="50" cy="50" r="44" stroke="#4f46e5" stroke-width="6.5" stroke-linecap="round" fill="transparent" stroke-dasharray="276.46" stroke-dashoffset="276.46" class="transition-all duration-300" />
+              </svg>
+
+              <!-- Inner Digital Time Display -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="timerStatusLabel" class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 mb-0.5 flex items-center gap-1">
+                  <span id="timerStatusDot" class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                  <span id="timerStatusText">준비 완료</span>
+                </span>
+                <span id="timerDisplayMain" class="font-['JetBrains_Mono',monospace] text-3xl font-black text-slate-900 tracking-tight">
+                  00:00:00
+                </span>
+                <div class="text-[11px] text-slate-500 font-medium mt-1.5 flex items-center gap-1">
+                  <span>목표:</span>
+                  <span id="timerTargetDisplay" class="font-bold text-slate-700">60분</span>
+                  <span class="text-slate-300">·</span>
+                  <span id="timerPercentDisplay" class="text-indigo-600 font-bold">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <p id="timerEncouragement" class="text-xs text-slate-500 font-medium mt-2 px-2 h-5 truncate">
+              "순공 시작하기를 누르면 정확한 공부시간 측정이 시작됩니다."
+            </p>
+
+            <!-- Control Buttons (Mobile Friendly Large Touch targets) -->
+            <div class="flex items-center justify-center gap-2 mt-5 w-full">
+              <button id="btnTimerStart" onclick="startTimer()" class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-200 transition flex items-center justify-center gap-1.5 text-sm">
+                <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                <span id="btnTimerStartLabel">순공 시작하기</span>
+              </button>
+
+              <button id="btnTimerPause" onclick="pauseTimer()" class="hidden flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-extrabold rounded-2xl shadow-lg shadow-amber-200 transition flex items-center justify-center gap-1.5 text-sm">
+                <i data-lucide="pause" class="w-4 h-4 fill-current"></i>
+                <span>잠깐 휴식 (일시정지)</span>
+              </button>
+
+              <button id="btnTimerStop" onclick="finishSession()" class="hidden py-3.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition flex items-center justify-center gap-1 text-xs border border-slate-200">
+                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                <span>저장</span>
+              </button>
+
+              <button id="btnTimerReset" onclick="resetTimer()" class="p-3.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl transition">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="mt-3 text-[10px] text-slate-400 flex items-center justify-center gap-1">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+              <span>휴식 시 일시정지를 누르면 순수 공부 시간만 측정됩니다.</span>
+            </div>
+          </div>
+
+          <!-- Subject Mini Stats Grid -->
+          <div class="pt-4 border-t border-slate-100 grid grid-cols-2 gap-2 text-left">
+            <div class="p-3 bg-slate-50 rounded-2xl">
+              <span class="text-[10px] text-slate-400 font-medium block">이 과목 오늘 순공</span>
+              <span id="statSubjectTodayPure" class="font-mono text-sm font-bold text-slate-800">00:00:00</span>
+            </div>
+            <div class="p-3 bg-indigo-50/60 rounded-2xl">
+              <span class="text-[10px] text-indigo-400 font-medium block">오늘 전체 순공시간</span>
+              <span id="statAllTodayPure" class="font-mono text-sm font-bold text-indigo-600">00:00:00</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. 통계 및 주간 그래프 탭 ================= -->
+      <section id="tab-stats" class="tab-pane hidden space-y-4">
+
+        <!-- Top Header & Goal Setting Button -->
+        <div class="flex items-center justify-between px-1">
+          <div>
+            <h3 class="text-base font-black text-slate-900 flex items-center gap-1.5">
+              <i data-lucide="bar-chart-2" class="w-5 h-5 text-indigo-600"></i>
+              <span>주간 순공시간 성취</span>
+            </h3>
+            <p class="text-[11px] text-slate-400">목표 대비 나의 순공 성취율</p>
+          </div>
+
+          <!-- Goal Customization & Reset Action Buttons -->
+          <div class="flex items-center gap-1.5">
+            <button onclick="resetAllStudyData()" title="순공 기록 0으로 초기화" class="p-1.5 bg-slate-100 hover:bg-rose-50 text-slate-500 hover:text-rose-600 rounded-xl text-xs transition border border-slate-200">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="openGoalSettingModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm shadow-indigo-200 transition flex items-center gap-1">
+              <i data-lucide="target" class="w-3.5 h-3.5"></i>
+              <span>목표 설정</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Weekly Summary Key Numbers Cards -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+            <span class="text-[11px] text-slate-400 font-medium block mb-1">이번 주 총 순공</span>
+            <div id="weeklyTotalPureStudy" class="text-lg font-black text-slate-900 font-mono">0시간 0분</div>
+            <span class="text-[10px] text-emerald-600 font-bold mt-0.5 block">일주일 누적</span>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+            <span class="text-[11px] text-slate-400 font-medium block mb-1">일 평균 순공</span>
+            <div id="weeklyDailyAverage" class="text-lg font-black text-slate-900 font-mono">0시간 0분</div>
+            <span class="text-[10px] text-indigo-600 font-bold mt-0.5 block">목표 달성률: <b id="weeklyGoalPercent">0%</b></span>
+          </div>
+        </div>
+
+        <!-- Interactive Weekly Chart Card (with Student Custom Goal Line) -->
+        <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-xs text-slate-800">일주일 순공시간 & 목표선</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200 font-semibold">목표선 포함</span>
+              </div>
+              <p class="text-[10px] text-slate-400">막대 = 실제 순공시간 / 빨간 점선 = 학생 설정 목표치</p>
+            </div>
+          </div>
+
+          <!-- Chart Canvas -->
+          <div class="h-64 w-full">
+            <canvas id="weeklyBarChart"></canvas>
+          </div>
+
+          <!-- Quick Target Status Badge -->
+          <div class="p-2.5 bg-slate-50 rounded-xl flex items-center justify-between text-xs">
+            <span class="text-slate-500 text-[11px] flex items-center gap-1">
+              <span class="w-2.5 h-0.5 bg-rose-500 rounded-full inline-block"></span>
+              <span>현재 설정된 하루 목표:</span>
+              <b id="chartGoalBadge" class="text-slate-800 font-mono">6시간</b>
+            </span>
+            <button onclick="openGoalSettingModal()" class="text-indigo-600 font-bold text-[11px] hover:underline">
+              목표 수정하기 &gt;
+            </button>
+          </div>
+        </div>
+
+        <!-- Subject Proportion Doughnut & Details -->
+        <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm space-y-3">
+          <h4 class="text-xs font-bold text-slate-800 flex items-center justify-between">
+            <span>과목별 학습 비중</span>
+            <span id="weeklyTopSubjectBadge" class="text-[10px] text-indigo-600 font-normal">최다: 수학</span>
+          </h4>
+          <div class="h-48 w-full flex items-center justify-center">
+            <canvas id="subjectPieChart"></canvas>
+          </div>
+          <div id="subjectRatioLegend" class="pt-2 border-t border-slate-100 space-y-1.5 text-xs">
+            <!-- Dynamic Legend -->
+          </div>
+        </div>
+
+        <!-- AI Weekly In-Depth Mentoring Section -->
+        <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-xl shadow-indigo-950/20 space-y-3 relative overflow-hidden border border-indigo-500/20">
+          <div class="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-indigo-500/10 blur-xl pointer-events-none"></div>
+
+          <!-- Section Header -->
+          <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-xl bg-indigo-500/30 text-indigo-300 flex items-center justify-center border border-indigo-400/30">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-black tracking-tight flex items-center gap-1.5">
+                  <span>AI 1:1 주간 심층 멘토링</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 font-bold">7일 데이터 분석</span>
+                </h4>
+                <p class="text-[10px] text-slate-400">1주일간의 순공 데이터를 종합 분석한 전담 코칭</p>
+              </div>
+            </div>
+
+            <button onclick="generateWeeklyAiMentoring(true)" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-bold transition flex items-center gap-1 shadow-sm">
+              <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+              <span>멘토링 갱신</span>
+            </button>
+          </div>
+
+          <!-- Mentoring Content Cards Container -->
+          <div id="aiWeeklyMentoringContainer" class="space-y-2.5 text-xs">
+            <!-- Injected via JS -->
+          </div>
+
+          <!-- Follow-up Question CTA -->
+          <div class="pt-2 border-t border-white/10 flex items-center justify-between">
+            <span class="text-[10px] text-slate-400">더 자세한 공부 고민이 있으신가요?</span>
+            <button onclick="askAiAboutWeeklyProgress()" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-indigo-200 hover:text-white rounded-xl text-[11px] font-bold transition flex items-center gap-1 border border-white/10">
+              <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+              <span>AI 멘토와 1:1 상담하기</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. AI 공부 멘토 탭 ================= -->
+      <section id="tab-ai" class="tab-pane hidden flex flex-col h-[540px]">
+        <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm flex flex-col h-full overflow-hidden">
+          
+          <!-- AI Chat Header -->
+          <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-xl bg-violet-600 text-white flex items-center justify-center">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="text-xs font-extrabold text-slate-900 block leading-tight">AI 학습 멘토</span>
+                <span class="text-[10px] text-slate-400">성적 & 취약점 기반 상담</span>
+              </div>
+            </div>
+            <button onclick="openApiKeyModal()" class="text-[10px] text-slate-500 hover:text-indigo-600 px-2 py-1 rounded-lg border border-slate-200 bg-white font-medium">
+              <span id="apiKeyBtnLabel">Gemini 연동</span>
+            </button>
+          </div>
+
+          <!-- Recommendation Chips -->
+          <div class="px-3 py-2 bg-slate-50 border-b border-slate-100 overflow-x-auto flex items-center gap-1.5 no-scrollbar text-[11px]">
+            <button onclick="sendQuickPrompt('수학 준킬러 문항 시간 부족할 때 훈련법')" class="quick-chip">📐 수학 시간단축</button>
+            <button onclick="sendQuickPrompt('에빙하우스 망각곡선 활용한 영단어 암기법')" class="quick-chip">📖 영단어 암기</button>
+            <button onclick="sendQuickPrompt('공부할 때 잡생각 없애고 집중하는 법')" class="quick-chip">🧠 멘탈/집중력</button>
+            <button onclick="sendQuickPrompt('국어 비문학 구조도 독해법')" class="quick-chip">📝 비문학 독해</button>
+          </div>
+
+          <!-- Messages Scrollable Area -->
+          <div id="aiChatMessages" class="flex-1 overflow-y-auto p-3.5 space-y-3">
+            <div class="flex items-start gap-2">
+              <div class="w-7 h-7 rounded-xl bg-violet-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+              </div>
+              <div class="bg-slate-100 rounded-2xl rounded-tl-sm p-3 text-xs text-slate-800 leading-relaxed max-w-[85%]">
+                <p class="font-bold text-violet-700 mb-1">안녕하세요! AI 학습 멘토입니다. 👋</p>
+                <p>문제를 풀다가 막힌 개념, 과목별 공부 팁, 슬럼프 극복법 등 학업에 대해 궁금한 점을 편하게 물어보세요!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Bar -->
+          <div class="p-2.5 border-t border-slate-100 bg-white">
+            <form id="aiChatForm" onsubmit="handleAiChatSubmit(event)" class="flex items-center gap-1.5">
+              <input type="text" id="aiChatInput" placeholder="궁금한 학습 내용 질문하기..." class="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 text-xs">
+              <button type="submit" class="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-100 shrink-0">
+                <i data-lucide="send" class="w-4 h-4"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. 대학어디가 성적 맞춤 대학추천 탭 ================= -->
+      <section id="tab-university" class="tab-pane hidden space-y-3.5">
+        
+        <!-- Header Banner (Adiga Style) -->
+        <div class="bg-gradient-to-br from-blue-700 via-indigo-700 to-indigo-900 rounded-3xl p-4 sm:p-5 text-white shadow-xl shadow-blue-900/20 relative overflow-hidden border border-blue-400/20">
+          <div class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+
+          <div class="flex items-center justify-between mb-2">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/20 text-[10px] font-bold backdrop-blur-md">
+              <i data-lucide="school" class="w-3 h-3 text-cyan-300"></i>
+              <span>대학어디가(Adiga) 입결 분석 연동</span>
+            </span>
+            <a href="https://www.adiga.kr" target="_blank" rel="noopener noreferrer" class="text-[10px] text-blue-200 hover:text-white flex items-center gap-0.5 font-bold underline">
+              <span>adiga.kr 바로가기</span>
+              <i data-lucide="external-link" class="w-3 h-3"></i>
+            </a>
+          </div>
+
+          <h3 class="text-base font-black tracking-tight">
+            <span id="univStudentName">민수</span> 학생 성적 맞춤 지원 대학
+          </h3>
+          <p class="text-[11px] text-blue-100 mt-0.5 opacity-90 leading-relaxed">
+            입력된 6개 과목 등급을 바탕으로 <b>안정 · 적정 · 소신 · 도전</b> 구간별 합격 가능 대학을 실시간 진단했습니다.
+          </p>
+
+          <!-- Current Student Score Summary Strip -->
+          <div class="mt-3 pt-3 border-t border-white/15 flex items-center justify-between">
+            <div class="text-[11px]">
+              <span class="text-blue-200 block text-[10px]">내 평균 등급</span>
+              <span id="univAvgGradeBadge" class="font-black text-lg font-mono text-cyan-300">2.8등급</span>
+            </div>
+            <div class="text-right">
+              <span class="text-blue-200 block text-[10px]">목표 대학</span>
+              <span id="univCurrentTarget" class="font-bold text-xs text-white truncate max-w-[170px] block">연세대학교</span>
+            </div>
+            <button onclick="openProfileModal()" class="px-2.5 py-1 bg-white/15 hover:bg-white/25 rounded-lg text-[10px] font-bold border border-white/20 transition">
+              성적 수정
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Controls (Admission Type: 수시 vs 정시, Major, Probability) -->
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2.5">
+          
+          <!-- 1. Admission Type Switcher (수시 vs 정시 vs 수시·정시 비교) -->
+          <div>
+            <div class="flex items-center justify-between text-[11px] mb-1.5 px-0.5">
+              <span class="font-extrabold text-slate-800 flex items-center gap-1">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <span>전형 유형 선택</span>
+              </span>
+              <span id="admissionTypeHint" class="text-[10px] text-indigo-600 font-bold">수시/정시 모두 비교 중</span>
+            </div>
+            <div class="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-xl text-xs font-bold text-center">
+              <button onclick="setAdmissionType('all')" id="admTypeBtn-all" class="univ-filter-btn active">
+                ⚖️ 수시·정시 비교
+              </button>
+              <button onclick="setAdmissionType('susi')" id="admTypeBtn-susi" class="univ-filter-btn text-indigo-700">
+                📋 수시 (학생부)
+              </button>
+              <button onclick="setAdmissionType('jeongsi')" id="admTypeBtn-jeongsi" class="univ-filter-btn text-purple-700">
+                🎯 정시 (수능위주)
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Probability Segment Tabs -->
+          <div class="grid grid-cols-4 gap-1 p-0.5 bg-slate-100 rounded-xl text-[11px] font-bold text-center">
+            <button onclick="filterUnivProbability('all')" id="probBtn-all" class="univ-filter-btn active">전체 합격권</button>
+            <button onclick="filterUnivProbability('safe')" id="probBtn-safe" class="univ-filter-btn text-emerald-700">🟢안정</button>
+            <button onclick="filterUnivProbability('fit')" id="probBtn-fit" class="univ-filter-btn text-blue-700">🔵적정</button>
+            <button onclick="filterUnivProbability('reach')" id="probBtn-reach" class="univ-filter-btn text-amber-700">🟡소신/도전</button>
+          </div>
+
+          <!-- 3. Major Track Selector -->
+          <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar text-[11px] pt-0.5">
+            <button onclick="filterUnivMajor('all')" id="majorBtn-all" class="univ-major-chip active">전체 계열</button>
+            <button onclick="filterUnivMajor('engineering')" id="majorBtn-engineering" class="univ-major-chip">공학·IT</button>
+            <button onclick="filterUnivMajor('natural')" id="majorBtn-natural" class="univ-major-chip">자연·과학</button>
+            <button onclick="filterUnivMajor('humanities')" id="majorBtn-humanities" class="univ-major-chip">인문·어문</button>
+            <button onclick="filterUnivMajor('social')" id="majorBtn-social" class="univ-major-chip">사회·상경</button>
+            <button onclick="filterUnivMajor('medical')" id="majorBtn-medical" class="univ-major-chip">의약학</button>
+          </div>
+        </div>
+
+        <!-- University List Container -->
+        <div id="univListContainer" class="space-y-2.5">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Future Simulator Banner -->
+        <div class="p-3.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900">
+          <div class="p-1.5 bg-amber-100 rounded-xl text-amber-700 shrink-0 mt-0.5">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="font-black text-amber-950 text-[11px]">AI 등급 상승 시뮬레이션</p>
+            <p class="text-[11px] text-amber-800 mt-0.5 leading-relaxed" id="univSimulatorAdvice">
+              취약 과목을 1등급 올리면 지원 가능한 대학 라인이 1단계(인서울 상위권) 수직 상승합니다!
+            </p>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar (Fixed at bottom - 5 Tabs) -->
+    <nav class="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-1 py-1.5 flex justify-around items-center z-40">
+      <button onclick="switchTab('planner')" id="nav-planner" class="mobile-tab-btn active">
+        <i data-lucide="calendar-check-2" class="w-4 h-4"></i>
+        <span>플래너</span>
+      </button>
+      <button onclick="switchTab('timer')" id="nav-timer" class="mobile-tab-btn relative">
+        <i data-lucide="timer" class="w-4 h-4"></i>
+        <span>순공타이머</span>
+        <span id="activeTimerIndicator" class="hidden absolute top-1 right-2.5 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+      </button>
+      <button onclick="switchTab('stats')" id="nav-stats" class="mobile-tab-btn">
+        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+        <span>성취그래프</span>
+      </button>
+      <button onclick="switchTab('university')" id="nav-university" class="mobile-tab-btn">
+        <i data-lucide="school" class="w-4 h-4"></i>
+        <span>대학추천</span>
+      </button>
+      <button onclick="switchTab('ai')" id="nav-ai" class="mobile-tab-btn">
+        <i data-lucide="bot" class="w-4 h-4"></i>
+        <span>AI멘토</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ================= 학생 순공시간 목표 그래프 설정 모달 ================= -->
+  <div id="goalSettingModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+            <i data-lucide="target" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900">순공시간 목표 그래프 설정</h3>
+            <p class="text-[11px] text-slate-400">그래프에 표시될 목표 순공시간을 설정합니다</p>
+          </div>
+        </div>
+        <button onclick="closeGoalSettingModal()" class="text-slate-400 hover:text-slate-700"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="goalSettingForm" onsubmit="handleGoalSettingSubmit(event)" class="space-y-4 text-xs">
+        <!-- 1. 기본 하루 일괄 목표 시간 -->
+        <div class="p-3.5 bg-slate-50 rounded-2xl space-y-2 border border-slate-100">
+          <div class="flex justify-between items-center">
+            <label class="font-bold text-slate-800">일일 기본 목표 순공시간</label>
+            <span id="customDailyGoalDisplay" class="font-extrabold text-indigo-600 font-mono text-sm">6시간</span>
+          </div>
+          <input type="range" id="inputCustomDailyGoal" min="1" max="14" step="0.5" value="6" oninput="updateGoalSliderDisplay(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-400">
+            <span>2시간 (가볍게)</span>
+            <span>6시간 (권장)</span>
+            <span>10시간+ (수험생)</span>
+          </div>
+        </div>
+
+        <!-- 2. 요일별 맞춤 목표 모드 (평일 vs 주말 분리) -->
+        <div class="space-y-2">
+          <span class="font-bold text-slate-800 block">요일별 목표 상세 조정</span>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
+              <span class="text-[10px] text-indigo-700 font-bold block mb-1">평일 (월~금) 목표</span>
+              <div class="flex items-center gap-1">
+                <input type="number" id="inputWeekdayGoal" min="1" max="15" step="0.5" value="5.5" class="w-16 px-2 py-1 text-center font-bold bg-white rounded-lg border border-slate-200">
+                <span class="text-slate-600">시간/일</span>
+              </div>
+            </div>
+            <div class="p-3 bg-purple-50/50 rounded-xl border border-purple-100">
+              <span class="text-[10px] text-purple-700 font-bold block mb-1">주말 (토~일) 목표</span>
+              <div class="flex items-center gap-1">
+                <input type="number" id="inputWeekendGoal" min="1" max="16" step="0.5" value="8.0" class="w-16 px-2 py-1 text-center font-bold bg-white rounded-lg border border-slate-200">
+                <span class="text-slate-600">시간/일</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-normal">
+            💡 주간 성취 그래프에 요일별로 설정한 목표 기준선이 정확하게 그려집니다.
+          </p>
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeGoalSettingModal()" class="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl">취소</button>
+          <button type="submit" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-100">목표 적용하기</button>
+        </div>
+
+        <div class="pt-1 text-center">
+          <button type="button" onclick="resetAllStudyData()" class="text-[11px] text-rose-500 hover:text-rose-700 underline font-medium">
+            🗑️ 기존 순공시간 기록 전체 0초로 초기화하기
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 온보딩 & 학생 정보 모달 ================= -->
+  <div id="profileModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-900" id="profileModalTitle">학생 맞춤 설정 & 목표 입력</h3>
+            <p class="text-[11px] text-slate-400">성적과 목표 기반 AI 플래너 구성</p>
+          </div>
+        </div>
+        <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-700"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="profileForm" onsubmit="handleProfileSubmit(event)" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">이름</label>
+            <input type="text" id="inputStudentName" required placeholder="민수" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">학년</label>
+            <select id="inputStudentGrade" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white">
+              <option value="중학교">중학생</option>
+              <option value="고1">고1</option>
+              <option value="고2" selected>고2</option>
+              <option value="고3">고3 (수험생)</option>
+              <option value="N수생">N수생</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">성취 목표 (대학/등급 등)</label>
+          <input type="text" id="inputStudentTarget" required placeholder="목표 대학 합격 & 전과목 1~2등급" class="w-full px-3 py-2 rounded-xl border border-slate-200">
+        </div>
+
+        <!-- Grades (Expanded Subjects) -->
+        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+          <span class="font-bold text-slate-800 block text-[11px]">과목별 현재 등급/성적 수준 (6개 과목)</span>
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div>
+              <span class="text-slate-500 block mb-0.5">국어 등급</span>
+              <select id="gradeKorean" class="w-full p-1.5 bg-white rounded-lg border border-slate-200">
+                <option value="1">1등급</option>
+                <option value="2">2등급</option>
+                <option value="3" selected>3등급</option>
+                <option value="4">4등급</option>
+                <option value="5">5등급 이하</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">수학 등급</span>
+              <select id="gradeMath" class="w-full p-1.5 bg-white rounded-lg border border-slate-200">
+                <option value="1">1등급</option>
+                <option value="2">2등급</option>
+                <option value="3">3등급</option>
+                <option value="4" selected>4등급 (집중 필요)</option>
+                <option value="5">5등급 이하</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">영어 등급</span>
+              <select id="gradeEnglish" class="w-full p-1.5 bg-white rounded-lg border border-slate-200">
+                <option value="1">1등급</option>
+                <option value="2" selected>2등급</option>
+                <option value="3">3등급</option>
+                <option value="4">4등급 이하</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">한국사 등급</span>
+              <select id="gradeHistory" class="w-full p-1.5 bg-white rounded-lg border border-slate-200">
+                <option value="1">1등급</option>
+                <option value="2">2등급</option>
+                <option value="3" selected>3등급</option>
+                <option value="4">4등급 이하</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">과학 등급</span>
+              <select id="gradeScience" class="w-full p-1.5 bg-white rounded-lg border border-slate-200">
+                <option value="1">1등급</option>
+                <option value="2">2등급</option>
+                <option value="3" selected>3등급</option>
+                <option value="4">4등급 이하</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-slate-500 block mb-0.5">사회 등급</span>
+              <select id="gradeSociety" class="w-full p-1.5 bg-white rounded-lg border border-slate-200">
+                <option value="1">1등급</option>
+                <option value="2">2등급</option>
+                <option value="3" selected>3등급</option>
+                <option value="4">4등급 이하</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">집중 보완할 취약 과목</label>
+          <select id="inputWeakSubject" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white">
+            <option value="수학" selected>수학 (개념 다지기 & 기출 킬러)</option>
+            <option value="국어">국어 (비문학 독해 & 문학)</option>
+            <option value="영어">영어 (구문 독해 & 필수 어휘)</option>
+            <option value="한국사">한국사 (시대별 흐름 & 핵심 사건 암기)</option>
+            <option value="과학">과학 (물·화·생·지 원리 이해 & 문제 풀이)</option>
+            <option value="사회">사회 (사회문화·지리·윤리 개념 완성)</option>
+          </select>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md shadow-indigo-100">
+            AI 맞춤 플래너 생성하고 시작하기
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 과목 추가 모달 -->
+  <div id="addSubjectModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-3 text-xs">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h4 class="font-bold text-slate-900">새 학습 과목 추가</h4>
+        <button onclick="closeAddSubjectModal()" class="text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="handleAddSubjectSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-slate-600 mb-1">과목명</label>
+          <input type="text" id="newSubjectName" required placeholder="예: 한국사 / 생명과학" class="w-full px-3 py-2 border rounded-xl">
+        </div>
+        <div>
+          <label class="block text-slate-600 mb-1">학습 내용</label>
+          <input type="text" id="newSubjectGoal" required placeholder="예: 3단원 기출문제 풀이" class="w-full px-3 py-2 border rounded-xl">
+        </div>
+        <div>
+          <label class="block text-slate-600 mb-1">목표 순공 시간 (분)</label>
+          <input type="number" id="newSubjectMinutes" required min="10" max="300" step="5" value="60" class="w-full px-3 py-2 border rounded-xl">
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="button" onclick="closeAddSubjectModal()" class="flex-1 py-2 bg-slate-100 rounded-xl font-bold">취소</button>
+          <button type="submit" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl font-bold">추가</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Gemini API Key 모달 -->
+  <div id="apiKeyModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-3 text-xs">
+      <div class="flex items-center justify-between border-b pb-2">
+        <h4 class="font-bold text-slate-900">Gemini API 키 연동</h4>
+        <button onclick="closeApiKeyModal()" class="text-slate-400"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <p class="text-slate-500 text-[11px]">API 키가 없어도 내장된 AI 학습 멘토가 정상 동작합니다.</p>
+      <input type="password" id="inputGeminiApiKey" placeholder="AIzaSy..." class="w-full px-3 py-2 border rounded-xl">
+      <div class="flex gap-2 pt-1">
+        <button onclick="clearApiKey()" type="button" class="px-3 py-2 bg-slate-100 rounded-xl">해제</button>
+        <button onclick="saveApiKey()" type="button" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl font-bold">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <audio id="timerChime" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="app.js"></script>
+  <script>
+    lucide.createIcons();
+    // Live Clock updater for Mobile Frame
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const clockEl = document.getElementById('mobileClock');
+      if (clockEl) clockEl.innerText = `${h}:${m}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>
